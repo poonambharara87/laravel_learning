@@ -1,0 +1,46 @@
+icon
+size
+delete from server
+
+ public function fileUpload(Request $req)
+    {
+        $req->validate([
+            'file' => 'required|mimes:csv,docx,xlsx,txt,xls,pdf,png,jpeg,jpg|max:2048'
+        ]);
+    
+        $fileModel = new File;
+        if ($req->file()) {
+            $uploadedFile = $req->file('file');
+    
+            $fileName = time() . '_' . $uploadedFile->getClientOriginalName();
+            $extension = $uploadedFile->getClientOriginalExtension();
+    
+            $filePath = $uploadedFile->storeAs('public',$fileName);
+           
+            $fileModel->name = time() . '_' . $uploadedFile->getClientOriginalName();
+            $fileModel->file_path = '/'.$filePath;
+           
+            $extension = $req->file->getClientOriginalExtension();
+            // $path = storage_path()."/public".'/'.$fileName;
+            // $ok = filesize(public_path($path));
+            $fileSize = $req->file->getSize();
+            $fileModel->size = $fileSize;
+            $fileModel->extension = $extension;
+            $fileModel->save();
+    
+            return response()->json(['message' => 'File has been uploaded successfully']);
+        }
+    }
+
+    public function delete($id)
+        {
+            $file = File::findOrFail($id);
+            $file->delete();
+            $name = $file->fileName;
+            // $file_path = public_path('uploads/'.$name);
+            if(file_exists($file_path)){
+                unlink($file_path);
+            }
+           
+            return redirect()->back();
+        }
